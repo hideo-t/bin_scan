@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#FFF5E6">
+<title>貧乏スキャン</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&family=Dela+Gothic+One&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#FFF8F0;--bg2:#FFFFFF;--bg3:#FFF0E0;
+  --text:#2D2A26;--dim:#8A8480;--white:#fff;
+  --pink:#FF6B8A;--orange:#FF8C42;--yellow:#FFD166;
+  --green:#06D6A0;--blue:#4ECDC4;--purple:#A88BEB;
+  --red:#FF5757;
+  --cat-s:#FF6B8A;--cat-c:#FF8C42;--cat-r:#4ECDC4;--cat-e:#FFD166;--cat-m:#A88BEB;
+  --shadow:0 4px 20px rgba(0,0,0,.06);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.1);
+  --round:'M PLUS Rounded 1c',sans-serif;
+  --display:'Dela Gothic One',sans-serif;
+  --radius:16px;--radius-sm:10px;
+}
+html{background:var(--bg);scroll-behavior:smooth}
+body{font-family:var(--round);color:var(--text);overflow-x:hidden;
+  -webkit-tap-highlight-color:transparent;font-size:15px;line-height:1.7;min-height:100dvh}
+
+/* ===== SCREEN ===== */
+.scr{display:none;flex-direction:column;align-items:center;min-height:100dvh;padding:1.5rem 1.2rem 3rem}
+.scr.on{display:flex;animation:popIn .5s cubic-bezier(.34,1.56,.64,1) forwards}
+@keyframes popIn{from{opacity:0;transform:scale(.96) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+
+/* ===== PROGRESS ===== */
+#prog{position:fixed;top:0;left:0;height:4px;border-radius:0 4px 4px 0;z-index:999;
+  background:linear-gradient(90deg,var(--pink),var(--orange),var(--yellow),var(--green),var(--blue));
+  transition:width .4s cubic-bezier(.25,.8,.25,1)}
+
+/* ===== COMMON ===== */
+.spacer{flex:1}
+.title-pop{font-family:var(--display);font-size:2rem;text-align:center;
+  background:linear-gradient(135deg,var(--pink),var(--orange));-webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;background-clip:text;margin-bottom:.3rem}
+.title-sub{font-size:.82rem;color:var(--dim);text-align:center;letter-spacing:.1em;margin-bottom:1.5rem;font-weight:700}
+.narr{font-size:.95rem;line-height:1.9;text-align:center;color:var(--text);max-width:360px;margin-bottom:1.5rem}
+.label{font-size:.7rem;font-weight:800;letter-spacing:.15em;margin-bottom:.8rem;text-transform:uppercase}
+
+.card{background:var(--bg2);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:1.2rem;width:100%;max-width:400px;margin-bottom:1rem}
+.card-accent{border-left:4px solid var(--pink)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
+  background:linear-gradient(135deg,var(--pink),var(--orange));color:#fff;
+  border:none;border-radius:50px;font-family:var(--round);font-weight:800;font-size:.95rem;
+  padding:.9rem 2.2rem;cursor:pointer;transition:all .2s;box-shadow:0 4px 15px rgba(255,107,138,.3);
+  letter-spacing:.05em}
+.btn:active{transform:scale(.96);box-shadow:0 2px 8px rgba(255,107,138,.2)}
+.btn-outline{background:transparent;color:var(--pink);border:2px solid var(--pink);
+  box-shadow:none}
+.btn-outline:active{background:rgba(255,107,138,.08)}
+.btn-sm{font-size:.82rem;padding:.65rem 1.5rem}
+.btn-ghost{background:transparent;color:var(--dim);border:none;box-shadow:none;font-size:.82rem;
+  text-decoration:underline;padding:.5rem 1rem}
+.btn[disabled],.btn.disabled{opacity:.35;pointer-events:none}
+
+.emoji-big{font-size:3rem;margin-bottom:.8rem}
+.tag{display:inline-block;font-size:.7rem;font-weight:800;padding:.25rem .7rem;
+  border-radius:50px;color:#fff;margin:.15rem}
+
+.scene-label{font-size:.72rem;font-weight:800;color:var(--dim);letter-spacing:.2em;margin-bottom:.8rem}
+
+/* ===== PROFILE SELECT ===== */
+.profile-group{margin-bottom:1.3rem;width:100%}
+.profile-group-label{font-size:.82rem;font-weight:800;color:var(--text);margin-bottom:.5rem}
+.profile-opts{display:flex;flex-wrap:wrap;gap:.4rem}
+.profile-opt{background:var(--bg3);border:2px solid transparent;border-radius:var(--radius-sm);
+  font-size:.8rem;font-weight:700;padding:.5rem .8rem;cursor:pointer;transition:all .2s;
+  color:var(--dim);font-family:var(--round)}
+.profile-opt:active,.profile-opt.sel{border-color:var(--orange);color:var(--orange);background:#FFF5E6}
+
+/* ===== QUESTIONS ===== */
+.q-card{background:var(--bg2);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:1.1rem;width:100%;max-width:400px;margin-bottom:.8rem;
+  border-left:4px solid var(--dim);transition:border-color .3s}
+.q-card.answered{border-left-color:var(--green)}
+.q-num{font-size:.7rem;font-weight:800;color:var(--dim);margin-bottom:.3rem}
+.q-text{font-size:.88rem;font-weight:700;line-height:1.7;margin-bottom:.7rem}
+.q-opts{display:flex;gap:.4rem}
+.q-opt{flex:1;background:var(--bg);border:2px solid transparent;border-radius:var(--radius-sm);
+  font-size:.78rem;font-weight:700;padding:.55rem .3rem;text-align:center;cursor:pointer;
+  transition:all .2s;color:var(--dim);font-family:var(--round)}
+.q-opt:active,.q-opt.sel{border-color:var(--green);color:var(--green);background:rgba(6,214,160,.06)}
+
+.cat-header{display:flex;align-items:center;gap:.5rem;margin-bottom:1rem;margin-top:.5rem;
+  width:100%;max-width:400px}
+.cat-dot{width:10px;height:10px;border-radius:50%}
+.cat-name{font-size:.85rem;font-weight:800;letter-spacing:.05em}
+.cat-count{font-size:.7rem;color:var(--dim);margin-left:auto;font-weight:700}
+
+/* ===== RESULT ===== */
+.res-type-badge{display:inline-block;padding:.5rem 1.5rem;border-radius:50px;
+  font-family:var(--display);font-size:1.1rem;color:#fff;margin-bottom:.5rem;
+  box-shadow:0 4px 15px rgba(0,0,0,.15)}
+.res-headline{font-family:var(--display);font-size:1rem;text-align:center;margin-bottom:1.5rem;
+  line-height:1.6}
+
+.bar-row{display:flex;align-items:center;gap:.5rem;margin-bottom:.6rem}
+.bar-icon{font-size:1rem;width:28px;text-align:center}
+.bar-label{font-size:.72rem;font-weight:800;width:40px;color:var(--dim)}
+.bar-track{flex:1;height:10px;background:var(--bg);border-radius:5px;overflow:hidden}
+.bar-fill{height:100%;border-radius:5px;transition:width .8s cubic-bezier(.25,.8,.25,1)}
+.bar-level{font-size:.68rem;font-weight:800;width:40px;text-align:right}
+
+.action-card{background:var(--bg2);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:1rem;margin-bottom:.8rem;width:100%;max-width:400px;border-left:4px solid var(--green)}
+.action-num{font-size:.65rem;font-weight:800;color:var(--green);margin-bottom:.2rem}
+.action-title{font-size:.9rem;font-weight:800;margin-bottom:.3rem}
+.action-detail{font-size:.8rem;color:var(--dim);line-height:1.6;margin-bottom:.2rem}
+.action-why{font-size:.75rem;color:var(--orange);font-weight:700}
+
+.disclaimer{font-size:.72rem;color:var(--dim);text-align:center;line-height:1.7;
+  max-width:360px;margin-top:1.5rem;padding-top:1rem;border-top:1px solid rgba(0,0,0,.06)}
+
+/* ===== LOGIN AREA ===== */
+.login-area{display:flex;flex-direction:column;align-items:center;gap:.5rem;margin-bottom:1.5rem}
+.login-google{display:flex;align-items:center;gap:.6rem;background:#fff;border:2px solid #ddd;
+  border-radius:50px;padding:.7rem 1.5rem;font-size:.85rem;font-weight:700;cursor:pointer;
+  transition:all .2s;font-family:var(--round);color:var(--text)}
+.login-google:hover{border-color:#4285F4;box-shadow:0 2px 10px rgba(66,133,244,.15)}
+.login-google svg{width:18px;height:18px}
+.login-status{font-size:.75rem;color:var(--green);font-weight:700}
+
+/* ===== TOAST ===== */
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--text);color:#fff;border-radius:50px;padding:.6rem 1.5rem;font-size:.8rem;
+  font-weight:700;opacity:0;transition:all .3s;z-index:1000;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ===== CONFETTI ===== */
+.confetti-wrap{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:998;overflow:hidden}
+.confetti{position:absolute;width:10px;height:10px;border-radius:2px;animation:confettiFall 2.5s ease-in forwards}
+@keyframes confettiFall{
+  0%{transform:translateY(-20px) rotate(0deg);opacity:1}
+  100%{transform:translateY(110vh) rotate(720deg);opacity:0}
+}
+
+/* ===== BG DECO ===== */
+.bg-circle{position:fixed;border-radius:50%;pointer-events:none;z-index:-1}
+.bg-c1{width:300px;height:300px;top:-80px;right:-100px;background:rgba(255,107,138,.06)}
+.bg-c2{width:250px;height:250px;bottom:-60px;left:-80px;background:rgba(78,205,196,.06)}
+.bg-c3{width:200px;height:200px;top:40%;right:-60px;background:rgba(255,209,102,.06)}
+</style>
+</head>
+<body>
+
+<div class="bg-circle bg-c1"></div>
+<div class="bg-circle bg-c2"></div>
+<div class="bg-circle bg-c3"></div>
+<div id="prog" style="width:0%"></div>
+<div id="toast" class="toast"></div>
+
+<!-- ========== 1. START ========== -->
+<div class="scr on" id="s-start">
+  <div class="spacer"></div>
+  <div class="emoji-big">🔍</div>
+  <div class="title-pop">貧乏スキャン</div>
+  <div class="title-sub">構造診断 v1.0</div>
+  <p class="narr">「貧乏」は性格じゃない。<br>構造の問題だ。<br><br>30の質問で、あなたの<br>ボトルネックを特定する。</p>
+  <div class="login-area">
+    <button class="login-google" id="loginBtn" onclick="googleLogin()">
+      <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Googleでログイン
+    </button>
+    <div class="login-status" id="loginStatus"></div>
+  </div>
+  <button class="btn" onclick="go('s-consent')">スキャン開始</button>
+  <button class="btn-ghost" onclick="go('s-consent')">ログインせずに始める</button>
+  <div class="spacer"></div>
+</div>
+
+<!-- ========== 2. CONSENT ========== -->
+<div class="scr" id="s-consent">
+  <div class="spacer"></div>
+  <div class="emoji-big">⚠️</div>
+  <div class="card card-accent">
+    <p style="font-size:.88rem;font-weight:700;line-height:1.8">
+      この診断は<strong>医療・法律・金融のアドバイスではありません</strong>。<br><br>
+      構造的な傾向を可視化し、行動の優先度を整理するツールです。<br><br>
+      個人特定情報（氏名・住所・勤務先）は一切取得しません。<br>
+      結果はお使いの端末にのみ保存されます。
+    </p>
+  </div>
+  <button class="btn" onclick="go('s-profile')" style="margin-top:1rem">同意して進む</button>
+  <div class="spacer"></div>
+</div>
+
+<!-- ========== 3. PROFILE ========== -->
+<div class="scr" id="s-profile">
+  <div class="scene-label">PROFILE</div>
+  <p class="narr" style="margin-bottom:1.5rem">あなたの属性を選んでください。<br>（統計的な傾向把握に使います）</p>
+  <div class="card" style="max-width:400px">
+    <div class="profile-group">
+      <div class="profile-group-label">📅 年齢帯</div>
+      <div class="profile-opts" data-key="ageBand">
+        <div class="profile-opt" onclick="prof('ageBand','18-24',this)">18-24</div>
+        <div class="profile-opt" onclick="prof('ageBand','25-29',this)">25-29</div>
+        <div class="profile-opt" onclick="prof('ageBand','30-39',this)">30-39</div>
+        <div class="profile-opt" onclick="prof('ageBand','40-49',this)">40-49</div>
+        <div class="profile-opt" onclick="prof('ageBand','50+',this)">50+</div>
+      </div>
+    </div>
+    <div class="profile-group">
+      <div class="profile-group-label">🎓 最終学歴</div>
+      <div class="profile-opts" data-key="education">
+        <div class="profile-opt" onclick="prof('education','junior_high',this)">中卒</div>
+        <div class="profile-opt" onclick="prof('education','high_school',this)">高卒</div>
+        <div class="profile-opt" onclick="prof('education','vocational',this)">専門卒</div>
+        <div class="profile-opt" onclick="prof('education','university',this)">大卒+</div>
+      </div>
+    </div>
+    <div class="profile-group">
+      <div class="profile-group-label">💼 就業状態</div>
+      <div class="profile-opts" data-key="employment">
+        <div class="profile-opt" onclick="prof('employment','unemployed',this)">無職</div>
+        <div class="profile-opt" onclick="prof('employment','non_regular',this)">非正規</div>
+        <div class="profile-opt" onclick="prof('employment','regular',this)">正規</div>
+        <div class="profile-opt" onclick="prof('employment','self',this)">自営</div>
+      </div>
+    </div>
+    <div class="profile-group">
+      <div class="profile-group-label">📍 居住環境</div>
+      <div class="profile-opts" data-key="area">
+        <div class="profile-opt" onclick="prof('area','urban',this)">都市部</div>
+        <div class="profile-opt" onclick="prof('area','suburban',this)">郊外</div>
+        <div class="profile-opt" onclick="prof('area','rural',this)">地方</div>
+      </div>
+    </div>
+  </div>
+  <button class="btn disabled" id="btn-profile" onclick="startScan()">スキャン開始 →</button>
+</div>
+
+<!-- ========== 4. SCAN (questions) ========== -->
+<div class="scr" id="s-scan">
+  <div class="scene-label">SCAN</div>
+  <div id="scanProgress" style="font-size:.75rem;font-weight:800;color:var(--dim);margin-bottom:1rem"></div>
+  <div id="scanQuestions" style="width:100%;max-width:400px"></div>
+  <button class="btn disabled" id="btn-scan" onclick="calcResult()" style="margin-top:1rem">診断結果を見る 🔍</button>
+</div>
+
+<!-- ========== 5. RESULT ========== -->
+<div class="scr" id="s-result">
+  <div class="scene-label">DIAGNOSIS RESULT</div>
+  <div id="resContent" style="width:100%;max-width:420px;display:flex;flex-direction:column;align-items:center"></div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:.5rem;margin-top:1.5rem">
+    <button class="btn" onclick="copyResult()">📋 結果をコピー</button>
+    <button class="btn btn-outline btn-sm" onclick="location.reload()">もう一度スキャン</button>
+  </div>
+</div>
+
+<script>
+/* ========== QUESTIONS DATA ========== */
+const QUESTIONS = [
+  // STRUCTURE (S01-S06)
+  {id:'S01',cat:'structure',text:'病気や失業時、3ヶ月耐えられる支援先がある'},
+  {id:'S02',cat:'structure',text:'通院/服薬/睡眠など健康維持が一定できている'},
+  {id:'S03',cat:'structure',text:'週40時間働いても思考が止まらない体力が残る'},
+  {id:'S04',cat:'structure',text:'職業訓練や求人がある場所にアクセスできる'},
+  {id:'S05',cat:'structure',text:'住環境が学習や休息を妨げていない'},
+  {id:'S06',cat:'structure',text:'家庭問題（介護/DV/育児単独など）が生活を圧迫していない'},
+  // CULTURE (C01-C06)
+  {id:'C01',cat:'culture',text:'求人票に書ける資格・技能が1つ以上ある'},
+  {id:'C02',cat:'culture',text:'その技能は「未経験可市場」で通用する領域だ'},
+  {id:'C03',cat:'culture',text:'1つの技能に100時間以上集中した経験がある'},
+  {id:'C04',cat:'culture',text:'過去に「形にした成果物」（作品/実績/合格）がある'},
+  {id:'C05',cat:'culture',text:'学習は「無料〜安価ルート」を使い倒している'},
+  {id:'C06',cat:'culture',text:'直近30日で学習時間を確保している（週3日以上）'},
+  // SOCIAL (R01-R06)
+  {id:'R01',cat:'social',text:'自分より一段上の人と話す機会がある（月1以上）'},
+  {id:'R02',cat:'social',text:'同じ境遇の仲間（横の連帯）がいる'},
+  {id:'R03',cat:'social',text:'公的支援機関（ハロワ等）で担当者と関係ができている'},
+  {id:'R04',cat:'social',text:'情報源がSNSだけになっていない'},
+  {id:'R05',cat:'social',text:'勉強会/訓練/コミュニティに参加したことがある'},
+  {id:'R06',cat:'social',text:'相談できる第三者が最低1人いる'},
+  // ECONOMIC (E01-E06)
+  {id:'E01',cat:'economic',text:'月5000円を未来投資に回せる'},
+  {id:'E02',cat:'economic',text:'娯楽/嗜好費を削った実績がある'},
+  {id:'E03',cat:'economic',text:'固定費（通信/家賃/サブスク）を見直したことがある'},
+  {id:'E04',cat:'economic',text:'滞納や延滞がない'},
+  {id:'E05',cat:'economic',text:'収支を把握している（家計簿/メモでも）'},
+  {id:'E06',cat:'economic',text:'借金/返済が判断力を奪っていない'},
+  // MENTAL (M01-M06)
+  {id:'M01',cat:'mental',text:'失敗を人格でなく構造で説明できる'},
+  {id:'M02',cat:'mental',text:'目先の快楽を我慢した経験がある（短期→長期）'},
+  {id:'M03',cat:'mental',text:'「どうせ無理」が口癖になっていない'},
+  {id:'M04',cat:'mental',text:'情報収集で満足せず、1つを完走できる'},
+  {id:'M05',cat:'mental',text:'自尊心の拠点（居場所）が最低1つある'},
+  {id:'M06',cat:'mental',text:'不安が強い時でも小さく行動できる'},
+];
+
+const CAT_META = {
+  structure:{name:'構造',emoji:'🏗️',color:'var(--cat-s)',weight:1.3},
+  culture:{name:'技能',emoji:'⚡',color:'var(--cat-c)',weight:1.0},
+  social:{name:'縁',emoji:'🤝',color:'var(--cat-r)',weight:0.9},
+  economic:{name:'管理',emoji:'💰',color:'var(--cat-e)',weight:1.0},
+  mental:{name:'メンタル',emoji:'🧠',color:'var(--cat-m)',weight:1.5},
+};
+
+const TYPE_DATA = {
+  EFFORT_IMPOSSIBLE:{
+    label:'努力不能',gradient:'linear-gradient(135deg,#FF5757,#FF8C42)',emoji:'🚨',
+    headline:'努力を始める前に、環境を立て直すべき状態',
+    summary:'今は努力が成果に変わりにくい構造にいる。体力・住環境・家庭の圧迫など、生活基盤そのものが不安定な状態だ。ここで無理に頑張ると心だけが削れる。まず「回復」と「環境の再設計」が最優先。努力は、土台ができてからでいい。',
+  },
+  EFFORT_WASTE:{
+    label:'努力浪費',gradient:'linear-gradient(135deg,#FF8C42,#FFD166)',emoji:'🔄',
+    headline:'努力はしているが、方向が市場に届いていない',
+    summary:'あなたはサボっていない。むしろ動いている。ただ、努力の方向が「市場で評価される形」に変換されていない。技能が散ったままか、人とのつながりが足りないか、あるいはその両方だ。やることを「狭めて、形にする」だけで大きく変わる。',
+  },
+  RISE_POSSIBLE:{
+    label:'上昇可能',gradient:'linear-gradient(135deg,#4ECDC4,#06D6A0)',emoji:'📈',
+    headline:'配置は整い始めている。90日で伸ばせる',
+    summary:'基盤はある。メンタルも折れていない。あとは「伸びしろが一番大きいカテゴリ」に90日集中すること。弱いところを全部直そうとしない。一番効くところに火力を集中させれば、流れが変わる。',
+  },
+  EXIT_SOON:{
+    label:'脱出直前',gradient:'linear-gradient(135deg,#06D6A0,#4ECDC4)',emoji:'🚀',
+    headline:'脱出は近い。あとは"やり切る胆力"だけ',
+    summary:'構造・技能・メンタルがそろっている。あなたに足りないのは「最後の一押し」だけだ。完璧を待たず、8割で出す。形にして人に見せる。そこからフィードバックが回り始める。',
+  },
+};
+
+/* ========== ACTIONS DB ========== */
+const ACTIONS = [
+  // structure
+  {id:'A01',tags:['structure'],title:'生活の「回復」を最優先にする',
+    detail:'睡眠・通院・食事の最低ラインを固定する（週のルール化）',
+    why:'体力がない状態の努力は、成果が出ずに心だけ削れる'},
+  {id:'A02',tags:['structure'],title:'住環境の安全確保を相談する',
+    detail:'自治体の福祉窓口/DV相談/社協に連絡する',
+    why:'環境が壊れたまま努力しても、壊れ続ける'},
+  {id:'A03',tags:['structure'],title:'生活保護/緊急小口資金を調べる',
+    detail:'住んでいる自治体の福祉課に電話1本する',
+    why:'使える制度を知らないだけで詰む人は多い'},
+  // culture
+  {id:'A11',tags:['culture','culture_beginner'],title:'ハロートレーニングを1件調べる',
+    detail:'自治体サイト/ハロワで、IT/電気/溶接/介護の訓練を確認',
+    why:'無料で市場価値に直結する「国策ルート」がある'},
+  {id:'A12',tags:['culture'],title:'1つの技能に30日集中する',
+    detail:'今持っている技能で「小さな成果物」を1つ完成させる',
+    why:'散らかった努力は評価されない。形にしたものだけが武器になる'},
+  {id:'A13',tags:['culture','collector'],title:'情報収集をやめて手を動かす',
+    detail:'「調べる」を禁止して「作る/書く/出す」だけの日を週2作る',
+    why:'知識は武器じゃない。完成物だけが武器'},
+  // social
+  {id:'A21',tags:['social','social_public'],title:'ジョブ・カード相談を予約する',
+    detail:'ハロワで職業訓練と職歴整理の導線を作る',
+    why:'人を使い倒すと、情報と機会が増える'},
+  {id:'A22',tags:['social'],title:'月1で「一段上の人」と接点を作る',
+    detail:'勉強会/セミナー/オンラインコミュニティに1つ参加する',
+    why:'同じ層の中だけでは情報が循環しない'},
+  {id:'A23',tags:['social'],title:'SNS以外の情報源を1つ確保する',
+    detail:'図書館/専門サイト/公的データを定期的に見る習慣を作る',
+    why:'SNSは感情を動かすが、行動を正しくはしない'},
+  // economic
+  {id:'A31',tags:['economic','debt'],title:'返済/滞納の相談導線を確保する',
+    detail:'法テラス/自治体窓口/消費生活センターを調べる',
+    why:'金の不安は判断を壊す。まず思考の回復が必要'},
+  {id:'A32',tags:['economic'],title:'月5000円の「技能投資枠」を固定する',
+    detail:'娯楽費を1つ削って、学習/資格/交通費に回す',
+    why:'小さい投資の積み重ねが、1年後の選択肢を変える'},
+  {id:'A33',tags:['economic'],title:'固定費を1つだけ見直す',
+    detail:'通信費/サブスク/保険を1つだけ最安に変える',
+    why:'毎月自動で失う金を止めるのが最もコスパが高い'},
+  // mental
+  {id:'A41',tags:['mental'],title:'失敗を「構造メモ」に書き換える',
+    detail:'「自分がダメ」→「何の仕組みが足りなかった？」と書き直す',
+    why:'人格否定は学習を止める。構造分析は次の打ち手を生む'},
+  {id:'A42',tags:['mental'],title:'週に1つだけ「完走」する習慣を作る',
+    detail:'小さくていい。始めたことを1つ最後までやり切る',
+    why:'完走体験がないと、自己効力感が枯れる'},
+];
+
+/* ========== STATE ========== */
+const profileData = {};
+const answers = {};
+let profileDone = 0;
+let user = null;
+
+/* ========== NAV ========== */
+function go(id){
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  window.scrollTo({top:0});
+  updateProg(id);
+}
+const progMap={'s-start':0,'s-consent':5,'s-profile':10,'s-scan':15,'s-result':100};
+function updateProg(id){document.getElementById('prog').style.width=(progMap[id]||0)+'%'}
+
+/* ========== GOOGLE LOGIN (optional) ========== */
+function googleLogin(){
+  // For GitHub Pages: requires Google Identity Services setup
+  // Placeholder - stores mock user in localStorage
+  // To enable real Google login, add your Google Client ID and GSI script
+  const name = prompt('表示名を入力（Googleログインは要Client ID設定）：');
+  if(name){
+    user = {name};
+    document.getElementById('loginStatus').textContent = '✓ ' + name + ' でログイン中';
+    document.getElementById('loginBtn').style.display = 'none';
+    localStorage.setItem('pbs_user', JSON.stringify(user));
+  }
+}
+// Restore on load
+try{
+  const saved = localStorage.getItem('pbs_user');
+  if(saved){user=JSON.parse(saved);
+    document.getElementById('loginStatus').textContent='✓ '+user.name+' でログイン中';
+    document.getElementById('loginBtn').style.display='none';
+  }
+}catch(e){}
+
+/* ========== PROFILE ========== */
+function prof(key,val,el){
+  profileData[key]=val;
+  el.parentElement.querySelectorAll('.profile-opt').forEach(o=>o.classList.remove('sel'));
+  el.classList.add('sel');
+  if(Object.keys(profileData).length>=4)
+    document.getElementById('btn-profile').classList.remove('disabled');
+}
+
+/* ========== BUILD QUESTIONS ========== */
+function startScan(){
+  go('s-scan');
+  const wrap = document.getElementById('scanQuestions');
+  wrap.innerHTML = '';
+  let currentCat = '';
+  QUESTIONS.forEach((q,i) => {
+    if(q.cat !== currentCat){
+      currentCat = q.cat;
+      const m = CAT_META[q.cat];
+      const answered = QUESTIONS.filter(x=>x.cat===q.cat&&answers[x.id]!==undefined).length;
+      wrap.innerHTML += `<div class="cat-header" id="cat-${q.cat}">
+        <div class="cat-dot" style="background:${m.color}"></div>
+        <div class="cat-name" style="color:${m.color}">${m.emoji} ${m.name}</div>
+        <div class="cat-count" id="cnt-${q.cat}">0 / 6</div>
+      </div>`;
+    }
+    wrap.innerHTML += `<div class="q-card" id="qcard-${q.id}">
+      <div class="q-num" style="color:${CAT_META[q.cat].color}">${q.id}</div>
+      <div class="q-text">${q.text}</div>
+      <div class="q-opts">
+        <div class="q-opt" onclick="ans('${q.id}',0,this)">いいえ</div>
+        <div class="q-opt" onclick="ans('${q.id}',1,this)">一部</div>
+        <div class="q-opt" onclick="ans('${q.id}',2,this)">はい</div>
+      </div>
+    </div>`;
+  });
+  updateScanProgress();
+}
+
+function ans(id,val,el){
+  answers[id]=val;
+  el.parentElement.querySelectorAll('.q-opt').forEach(o=>o.classList.remove('sel'));
+  el.classList.add('sel');
+  document.getElementById('qcard-'+id).classList.add('answered');
+  updateScanProgress();
+}
+
+function updateScanProgress(){
+  const total = QUESTIONS.length;
+  const done = Object.keys(answers).length;
+  document.getElementById('scanProgress').textContent = `${done} / ${total} 回答済み`;
+  const pct = 15 + Math.round((done/total)*80);
+  document.getElementById('prog').style.width = pct+'%';
+  // Update category counts
+  Object.keys(CAT_META).forEach(cat=>{
+    const qs = QUESTIONS.filter(q=>q.cat===cat);
+    const cnt = qs.filter(q=>answers[q.id]!==undefined).length;
+    const el = document.getElementById('cnt-'+cat);
+    if(el) el.textContent = `${cnt} / ${qs.length}`;
+  });
+  // Enable button
+  if(done>=total) document.getElementById('btn-scan').classList.remove('disabled');
+  else document.getElementById('btn-scan').classList.add('disabled');
+}
+
+/* ========== SCORING ========== */
+function calcResult(){
+  // 1. Category scores (0-100)
+  const catScores = {};
+  Object.keys(CAT_META).forEach(cat=>{
+    const qs = QUESTIONS.filter(q=>q.cat===cat);
+    const raw = qs.reduce((s,q)=>(s+(answers[q.id]||0)),0);
+    const maxRaw = qs.length * 2;
+    catScores[cat] = Math.round((raw/maxRaw)*100);
+  });
+
+  // 2. Overall (weighted)
+  const W = Object.values(CAT_META).reduce((s,m)=>s+m.weight,0);
+  let weightedSum = 0;
+  Object.keys(CAT_META).forEach(cat=>{
+    weightedSum += catScores[cat] * CAT_META[cat].weight;
+  });
+  const overall = Math.round(weightedSum/W);
+
+  // 3. Penalty / Flags
+  const structGateItems = ['S02','S03','S05','S06'];
+  const zeroCount = structGateItems.filter(id=>(answers[id]||0)===0).length;
+  const structureGate = catScores.structure <= 30 || zeroCount >= 2;
+
+  const collectorFlag = (answers.C03||0)<=1 && (answers.M04||0)<=1 && (answers.C06||0)<=1;
+  const debtStressFlag = (answers.E04||0)===0 || (answers.E06||0)===0;
+
+  // 4. Type
+  let type;
+  if(structureGate){
+    type='EFFORT_IMPOSSIBLE';
+  } else if(overall<55 && (catScores.culture<55||catScores.social<45) && catScores.mental>=40){
+    type='EFFORT_WASTE';
+  } else if(overall>=75 && catScores.mental>=60 && catScores.culture>=60){
+    type='EXIT_SOON';
+  } else if(overall>=55 && catScores.mental>=45 && catScores.structure>=40){
+    type='RISE_POSSIBLE';
+  } else {
+    // Tiebreak: mental low → worse type
+    if(catScores.mental<40) type='EFFORT_IMPOSSIBLE';
+    else if(overall<55) type='EFFORT_WASTE';
+    else type='RISE_POSSIBLE';
+  }
+
+  // 5. Category feedback
+  const catFeedback = {};
+  Object.keys(CAT_META).forEach(cat=>{
+    const s = catScores[cat];
+    let level,strength,gap;
+    if(s>=80){level='強い';strength='この領域は安定している。維持を続けよう。';gap='現状維持でOK。他に火力を回せる。';}
+    else if(s>=55){level='伸びる';strength='基盤はある。集中すれば伸びる領域。';gap='あと一歩。90日で大きく変えられる。';}
+    else if(s>=30){level='弱い';strength='意識はある。ただし形になっていない。';gap='ここがボトルネック。優先的に手当が必要。';}
+    else{level='危険';strength='ほぼ機能していない。';gap='最優先で環境ごと見直す必要がある。';}
+    catFeedback[cat]={level,strength,gap,score:s};
+  });
+
+  // 6. Actions (max 3)
+  const selectedActions = [];
+  if(structureGate){
+    selectedActions.push(...ACTIONS.filter(a=>a.tags.includes('structure')).slice(0,3));
+  } else {
+    if(debtStressFlag){
+      const da = ACTIONS.find(a=>a.tags.includes('debt'));
+      if(da) selectedActions.push(da);
+    }
+    // Lowest category
+    const sorted = Object.entries(catScores).filter(([k])=>k!=='structure'||!structureGate)
+      .sort((a,b)=>a[1]-b[1]);
+    const lowestCat = sorted[0][0];
+    const catActions = ACTIONS.filter(a=>a.tags.includes(lowestCat)&&!selectedActions.find(s=>s.id===a.id));
+    selectedActions.push(...catActions.slice(0, 3-selectedActions.length));
+    if(collectorFlag && selectedActions.length<3){
+      const ca = ACTIONS.find(a=>a.tags.includes('collector')&&!selectedActions.find(s=>s.id===a.id));
+      if(ca) selectedActions.push(ca);
+    }
+    // Fill to 3
+    while(selectedActions.length<3){
+      const next = ACTIONS.find(a=>!selectedActions.find(s=>s.id===a.id));
+      if(next) selectedActions.push(next);
+      else break;
+    }
+  }
+
+  // 7. Build collector/debt addendum
+  let addendum = '';
+  if(collectorFlag) addendum += '\n\n⚠️ 学習逃避の傾向あり：情報収集で安心しているが、手が動いていない。「調べる」を減らし「作る」を増やすことが最優先。';
+  if(debtStressFlag) addendum += '\n\n⚠️ 負債ストレス検出：金銭的な不安が判断力を奪っている可能性がある。返済の相談導線を確保することで、思考の回復が始まる。';
+
+  renderResult(type, catScores, catFeedback, overall, selectedActions, addendum);
+  saveHistory(type, catScores, overall);
+}
+
+/* ========== RENDER RESULT ========== */
+function renderResult(type, catScores, catFeedback, overall, actions, addendum){
+  const t = TYPE_DATA[type];
+  const wrap = document.getElementById('resContent');
+
+  // Confetti for good results
+  if(type==='EXIT_SOON'||type==='RISE_POSSIBLE') spawnConfetti();
+
+  let html = '';
+  html += `<div class="res-type-badge" style="background:${t.gradient}">${t.emoji} ${t.label}</div>`;
+  html += `<div class="res-headline">${t.headline}</div>`;
+
+  // Summary
+  html += `<div class="card" style="margin-bottom:1.2rem"><p style="font-size:.88rem;line-height:1.9">${t.summary}${addendum.replace(/\n/g,'<br>')}</p></div>`;
+
+  // Bar chart
+  html += `<div style="width:100%;margin-bottom:1.2rem">`;
+  Object.entries(catScores).forEach(([cat,score])=>{
+    const m = CAT_META[cat];
+    const fb = catFeedback[cat];
+    const levelColor = score>=80?'var(--green)':score>=55?'var(--blue)':score>=30?'var(--orange)':'var(--red)';
+    html += `<div class="bar-row">
+      <div class="bar-icon">${m.emoji}</div>
+      <div class="bar-label">${m.name}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${score}%;background:${m.color}"></div></div>
+      <div class="bar-level" style="color:${levelColor}">${fb.level}</div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // Category feedback
+  html += `<div class="card" style="margin-bottom:1.2rem">
+    <div class="label" style="color:var(--pink)">📊 カテゴリ詳細</div>`;
+  Object.entries(catFeedback).forEach(([cat,fb])=>{
+    const m = CAT_META[cat];
+    html += `<div style="margin-bottom:.8rem;padding-left:.6rem;border-left:3px solid ${m.color}">
+      <div style="font-size:.8rem;font-weight:800;color:${m.color}">${m.emoji} ${m.name}</div>
+      <div style="font-size:.8rem;color:var(--dim);line-height:1.6">${fb.gap}</div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // Actions
+  html += `<div class="label" style="color:var(--green)">🎯 90日アクション（${actions.length}つだけ）</div>`;
+  actions.forEach((a,i)=>{
+    html += `<div class="action-card">
+      <div class="action-num">ACTION ${i+1}</div>
+      <div class="action-title">${a.title}</div>
+      <div class="action-detail">${a.detail}</div>
+      <div class="action-why">→ ${a.why}</div>
+    </div>`;
+  });
+
+  // Disclaimer
+  html += `<div class="disclaimer">
+    ⚠️ この診断は医療・法律・金融のアドバイスではありません。構造的な傾向を可視化し、行動の優先度を整理するためのツールです。深刻な状況にある方は、専門家や公的機関にご相談ください。
+  </div>`;
+
+  wrap.innerHTML = html;
+
+  // Store for copy
+  window._resultData = {type,t,actions};
+  go('s-result');
+}
+
+/* ========== SAVE HISTORY (localStorage) ========== */
+function saveHistory(type,catScores,overall){
+  try{
+    const hist = JSON.parse(localStorage.getItem('pbs_history')||'[]');
+    hist.unshift({
+      date:new Date().toISOString().slice(0,10),
+      type, overall,
+      scores:catScores
+    });
+    if(hist.length>10) hist.length=10;
+    localStorage.setItem('pbs_history',JSON.stringify(hist));
+  }catch(e){}
+}
+
+/* ========== COPY RESULT ========== */
+function copyResult(){
+  const d = window._resultData;
+  if(!d) return;
+  const text = `【貧乏スキャン診断結果】\nタイプ：${d.t.label}\n${d.t.headline}\n\n90日アクション：\n${d.actions.map((a,i)=>`${i+1}. ${a.title}`).join('\n')}\n\n#貧乏スキャン`;
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(()=>showToast('📋 コピーしました')).catch(()=>fallbackCopy(text));
+  } else fallbackCopy(text);
+}
+function fallbackCopy(text){
+  const ta=document.createElement('textarea');ta.value=text;ta.style.cssText='position:fixed;left:-9999px';
+  document.body.appendChild(ta);ta.select();
+  try{document.execCommand('copy');showToast('📋 コピーしました')}catch(e){prompt('結果：',text)}
+  document.body.removeChild(ta);
+}
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;
+  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+/* ========== CONFETTI ========== */
+function spawnConfetti(){
+  const wrap=document.createElement('div');wrap.className='confetti-wrap';document.body.appendChild(wrap);
+  const colors=['#FF6B8A','#FF8C42','#FFD166','#06D6A0','#4ECDC4','#A88BEB'];
+  for(let i=0;i<40;i++){
+    const c=document.createElement('div');c.className='confetti';
+    c.style.left=Math.random()*100+'%';
+    c.style.background=colors[Math.floor(Math.random()*colors.length)];
+    c.style.animationDelay=Math.random()*1.5+'s';
+    c.style.animationDuration=(2+Math.random()*1.5)+'s';
+    c.style.width=(6+Math.random()*8)+'px';
+    c.style.height=(6+Math.random()*8)+'px';
+    c.style.borderRadius=Math.random()>.5?'50%':'2px';
+    wrap.appendChild(c);
+  }
+  setTimeout(()=>wrap.remove(),4000);
+}
+
+/* ========== DISABLE CLICKS ON .disabled ========== */
+document.addEventListener('click',e=>{
+  if(e.target.classList.contains('disabled')){e.preventDefault();e.stopPropagation()}
+},true);
+</script>
+</body>
+</html>
